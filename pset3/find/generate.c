@@ -11,7 +11,7 @@
  * where n is number of pseudorandom numbers to print
  * and s is an optional seed
  */
-       
+
 #include <cs50.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -11,18 +11,18 @@ int main(int argc, string argv[])
         printf("Usage: ./vigenere keyword\n");
         return 1;
     }
-    
+
     string keyword = argv[1];
-    
+
     for (int i = 0, n = strlen(keyword); i < n; i++) {
         if (!isalpha(keyword[i])) {
             printf("Keyword cannot contain non-alphabetical characters.\n");
             return 1;
         }
     }
-    
+
     string plaintext = GetString();
-    
+
     encrypt(keyword, plaintext);
 }
 
@@ -31,7 +31,7 @@ void encrypt(string keyword, string plaintext)
     int m = strlen(keyword);
     int j = 0;
     int shift;
-    
+
     for (int i = 0, n = strlen(plaintext); i < n; i++) {
         if isalpha(plaintext[i]) {
             shift = 'A' + (isupper(plaintext[i]) == 0)*('a' - 'A');

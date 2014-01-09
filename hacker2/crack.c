@@ -36,7 +36,7 @@ bool dictionaryAttack(string ciphertext)
     while (fgets(word, 128, wordlist)) {    
         // fgets reads new line characters, and we don't want those
         word[strlen(word) - 1] = '\0';
-        
+
         if (!strcmp(crypt(word, salt), ciphertext)) {
             printf("Password found: %s\n", word);
             return true;

@@ -15,7 +15,7 @@ int main(int argc, string argv[])
 
     int key = atoi(argv[1]);
     string plaintext = GetString();
-    
+
     encrypt(key, plaintext);
 }
 
@@ -31,4 +31,3 @@ void encrypt(int key, string plaintext)
     }
     printf("\n");
 }
-
