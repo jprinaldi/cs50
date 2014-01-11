@@ -22,7 +22,7 @@
 #define WIDTH 400
 
 // number of rows of bricks
-#define ROWS 5
+#define ROWS 7
 
 // number of columns of bricks
 #define COLS 10
@@ -33,6 +33,9 @@
 // lives
 #define LIVES 3
 
+#define PADDLE_WIDTH 80
+#define PADDLE_HEIGHT 10
+
 // prototypes
 void initBricks(GWindow window);
 GOval initBall(GWindow window);
@@ -40,6 +43,8 @@ GRect initPaddle(GWindow window);
 GLabel initScoreboard(GWindow window);
 void updateScoreboard(GWindow window, GLabel label, int points);
 GObject detectCollision(GWindow window, GOval ball);
+
+double getRandomVelocity(void);
 
 int main(void)
 {
@@ -70,10 +75,60 @@ int main(void)
     // number of points initially
     int points = 0;
 
+    double x_velocity = getRandomVelocity();
+    double y_velocity = 0.05;
+
+    GObject collision;
+
+    char label_text[20];
+    snprintf(label_text, 20, "Score: %d", points);
+    setLabel(label, label_text);
+
+    waitForClick();
+
     // keep playing until game over
-    while (lives > 0 && bricks > 0)
-    {
-        // TODO
+    while (lives > 0 && bricks > 0) {
+
+        move(ball, x_velocity, y_velocity);
+
+        collision = detectCollision(window, ball);
+
+        if (getX(ball) + getWidth(ball) >= getWidth(window))
+            x_velocity *= -1;
+        else if (getX(ball) <= 0)
+            x_velocity *= -1;
+
+        if (collision == paddle)
+            y_velocity *= -1;
+        else if (collision != NULL && strcmp(getType(collision), "GRect") == 0) {
+            bricks--;
+            points++;
+            snprintf(label_text, 10, "Score: %d", points);
+            setLabel(label, label_text);
+            y_velocity *= -1;
+            removeGWindow(window, collision);
+        }
+
+        if (getY(ball) + getHeight(ball) >= getHeight(window)) {
+            lives--;
+            if (lives == 0)
+                break;
+            setLocation(ball, (WIDTH - RADIUS)/2, (HEIGHT - RADIUS)/2);
+            x_velocity = getRandomVelocity();
+            waitForClick();
+        } else if (getY(ball) <= 0)
+            y_velocity *= -1;
+
+        GEvent event = getNextEvent(MOUSE_EVENT);
+
+        if (event != NULL) {
+            if (getEventType(event) == MOUSE_MOVED) {
+                double x = getX(event) - PADDLE_WIDTH/2;
+                double y = getY(paddle);
+                if (x >= 0 && x + PADDLE_WIDTH <= WIDTH)
+                    setLocation(paddle, x, y);
+            }
+        }
     }
 
     // wait for click before exiting
@@ -84,12 +139,34 @@ int main(void)
     return 0;
 }
 
+double getRandomVelocity(void)
+{
+    return (drand48()/5 - 0.1);
+}
+
 /**
  * Initializes window with a grid of bricks.
  */
 void initBricks(GWindow window)
 {
-    // TODO
+    int num_colors = 5;
+    string colors[num_colors];
+    colors[0] = "RED";
+    colors[1] = "ORANGE";
+    colors[2] = "YELLOW";
+    colors[3] = "GREEN";
+    colors[4] = "CYAN";
+    int gap = 10;
+    int brick_width = (WIDTH - gap*(COLS + 1))/COLS;
+    int brick_height = 20;
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            GRect brick = newGRect(gap*(j + 1) + brick_width*j, gap*(i + 1) + brick_height*i, brick_width, brick_height);
+            setColor(brick, colors[i%num_colors]);
+            setFilled(brick, true);
+            add(window, brick);
+        }
+    }
 }
 
 /**
@@ -97,8 +174,11 @@ void initBricks(GWindow window)
  */
 GOval initBall(GWindow window)
 {
-    // TODO
-    return NULL;
+    GOval ball = newGOval((WIDTH - RADIUS)/2, (HEIGHT - RADIUS)/2, RADIUS, RADIUS);
+    setColor(ball, "BLUE");
+    setFilled(ball, true);
+    add(window, ball);
+    return ball;
 }
 
 /**
@@ -106,17 +186,23 @@ GOval initBall(GWindow window)
  */
 GRect initPaddle(GWindow window)
 {
-    // TODO
-    return NULL;
+    GRect paddle = newGRect(WIDTH/2 - PADDLE_WIDTH/2, HEIGHT - 80, PADDLE_WIDTH, PADDLE_HEIGHT);
+    setColor(paddle, "BLACK");
+    setFilled(paddle, true);
+    add(window, paddle);
+    return paddle;
 }
 
 /**
  * Instantiates, configures, and returns label for scoreboard.
  */
 GLabel initScoreboard(GWindow window)
-{
-    // TODO
-    return NULL;
+{    
+    GLabel label = newGLabel("");
+    setFont(label, "SansSerif-24");
+    setLocation(label, 8, HEIGHT - 10);
+    add(window, label);
+    return label;
 }
 
 /**
